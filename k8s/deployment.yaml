@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: harness-demo-app
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: harness-demo-app
+  template:
+    metadata:
+      labels:
+        app: harness-demo-app
+    spec:
+      containers:
+        - name: harness-demo-app
+          image: aristematic/harness-demo:latest
+          ports:
+            - containerPort: 3000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: harness-demo-svc
+  namespace: default
+spec:
+  selector:
+    app: harness-demo-app
+  ports:
+    - port: 80
+      targetPort: 3000
+  type: ClusterIP
