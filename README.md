@@ -45,7 +45,7 @@ harness-demo/
 
 ### 1. Create kind cluster
 ```bash
-kind create cluster --name harness-demo
+kind create cluster --name harness
 ```
 
 ### 2. Install Harness Delegate
@@ -101,7 +101,7 @@ Hello from Harness CI/CD! v1.0
 kubectl get pods -n default
 
 # Port forward
-kubectl port-forward svc/harness-demo-svc 9090:80
+kubectl port-forward svc/harness-svc 9090:80
 
 # Hit the app
 curl http://localhost:9090
