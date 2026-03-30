@@ -1,5 +1,3 @@
-cd /d/Harness
-cat <<'EOF' > README.md
 # Harness CI/CD Demo
 
 End-to-end CI/CD pipeline using Harness — builds a Node.js app, pushes to DockerHub, and deploys to a local Kubernetes cluster (kind).
