@@ -1,0 +1,8 @@
+helm upgrade -i helm-delegate --namespace harness-delegate-ng --create-namespace \
+  harness-delegate/harness-delegate-ng \
+  --set delegateName=helm-delegate \
+  --set accountId=CLaXX31MQ1S8TZTfTgY2IQ \
+  --set delegateToken=MDgyYzIwNDMzNmEzZDgzOTI3YWEwOWNjZmY2MTZjNmQ= \
+  --set managerEndpoint=https://app.harness.io \
+  --set delegateDockerImage=us-docker.pkg.dev/gar-prod-setup/harness-public/harness/delegate:26.03.88700 \
+  --set replicas=1 --set upgrader.enabled=true
