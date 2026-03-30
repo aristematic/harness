@@ -1,0 +1,130 @@
+pipeline:
+  name: Harness
+  identifier: Harness
+  projectIdentifier: default_project
+  orgIdentifier: default
+  tags: {}
+  properties:
+    ci:
+      codebase:
+        connectorRef: githubconnector
+        repoName: harness
+        build: <+input>
+  stages:
+    - stage:
+        name: CI-Build
+        identifier: CIBuild
+        description: ""
+        type: CI
+        spec:
+          cloneCodebase: true
+          caching:
+            enabled: true
+            override: true
+          buildIntelligence:
+            enabled: true
+          infrastructure:
+            type: KubernetesDirect
+            spec:
+              connectorRef: k8sconnector
+              namespace: default
+              automountServiceAccountToken: true
+              nodeSelector: {}
+              harnessImageConnectorRef: dockerhubconnector
+              os: Linux
+          execution:
+            steps:
+              - step:
+                  type: Run
+                  name: run-tests
+                  identifier: runtests
+                  spec:
+                    connectorRef: dockerhubconnector
+                    image: docker.io/library/node:18-alpine
+                    shell: Sh
+                    command: |-
+                      echo "Running tests..."
+                          node -e "console.log('All tests passed!')"
+              - step:
+                  type: BuildAndPushDockerRegistry
+                  name: build-and-push
+                  identifier: buildandpush
+                  spec:
+                    connectorRef: dockerhubconnector
+                    repo: aristematic/harness
+                    tags:
+                      - latest
+                    baseImageConnectorRefs:
+                      - dockerhubconnector
+    - stage:
+        name: approval-gate
+        identifier: approvalgate
+        description: ""
+        type: Approval
+        spec:
+          execution:
+            steps:
+              - step:
+                  name: manual-approval
+                  identifier: manualapproval
+                  type: HarnessApproval
+                  timeout: 1d
+                  spec:
+                    approvalMessage: |
+                      CI passed — approve to deploy to dev?
+                    includePipelineExecutionHistory: true
+                    approvers:
+                      minimumCount: 1
+                      disallowPipelineExecutor: false
+                      userGroups:
+                        - account._account_all_users
+                    isAutoRejectEnabled: false
+                    approverInputs: []
+        tags: {}
+    - stage:
+        name: CD-Deploy
+        identifier: CDDeploy
+        description: ""
+        type: Deployment
+        spec:
+          deploymentType: Kubernetes
+          service:
+            serviceRef: harnessapp
+            serviceInputs:
+              serviceDefinition:
+                type: Kubernetes
+                spec:
+                  artifacts:
+                    primary:
+                      primaryArtifactRef: <+input>
+                      sources: <+input>
+          environment:
+            environmentRef: dev
+            deployToAll: false
+            infrastructureDefinitions:
+              - identifier: kindcluster
+          execution:
+            steps:
+              - step:
+                  name: Rollout Deployment
+                  identifier: rolloutDeployment
+                  type: K8sRollingDeploy
+                  timeout: 10m
+                  spec:
+                    skipDryRun: false
+                    pruningEnabled: false
+            rollbackSteps:
+              - step:
+                  name: Rollback Rollout Deployment
+                  identifier: rollbackRolloutDeployment
+                  type: K8sRollingRollback
+                  timeout: 10m
+                  spec:
+                    pruningEnabled: false
+        tags: {}
+        failureStrategies:
+          - onFailure:
+              errors:
+                - AllErrors
+              action:
+                type: StageRollback
