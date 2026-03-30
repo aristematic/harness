@@ -50,6 +50,7 @@ kind create cluster --name harness
 
 ### 2. Install Harness Delegate
 ```bash
+
 # In Harness UI:
 # Project Settings → Delegates → + New Delegate → Kubernetes → Helm
 # Copy the helm command and run it
@@ -62,7 +63,6 @@ helm install helm-delegate \
 # Verify delegate is running
 kubectl get pods -n harness-delegate
 ```
-
 ### 3. Configure Connectors in Harness UI
 ```
 Project Settings → Connectors:
@@ -82,7 +82,7 @@ kubectl create secret docker-registry dockerhub-secret \
 
 ### 5. Run the Pipeline
 ```
-Harness UI → Pipelines → harness-demo-pipeline → Run
+Harness UI → Pipelines → harness-pipeline → Run
 - Branch: main
 - Artifact Tag: latest
 ```
